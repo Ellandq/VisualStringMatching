@@ -64,7 +64,6 @@ def text_to_images(*texts, font_size=64, padding=10, squish=False, overlap_facto
     return images
 
 
-
 def save_images(expected_text, ocr_text, squish=False):
     """
     Saves the expected and OCR text images to a new timestamped folder.
@@ -92,3 +91,25 @@ def save_images(expected_text, ocr_text, squish=False):
     cv2.imwrite(ocr_path, ocr_img)
 
     print(f"Images saved in: {run_folder}")
+
+
+def min_max_scale_list_of_lists(data):
+    # Flatten the list of lists to get the global min and max
+    flattened = np.array([item for sublist in data for item in sublist])
+
+    # Compute min and max
+    min_val, max_val = np.min(flattened), np.max(flattened)
+    if max_val == min_val:
+        return [[0.0 for _ in sublist] for sublist in data]
+
+    # Scale all values
+    scaled_flattened = (flattened - min_val) / (max_val - min_val)
+
+    # Reshape back to original structure
+    scaled_data = []
+    index = 0
+    for sublist in data:
+        scaled_data.append(scaled_flattened[index:index + len(sublist)].tolist())
+        index += len(sublist)
+
+    return scaled_data

@@ -5,7 +5,7 @@ from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from imageSimilarity import image_similarity
-from utils import text_to_images
+from utils import text_to_images, min_max_scale_list_of_lists
 
 characters = [
     "A", "Ą", "B", "C", "Ć", "D", "E", "Ę", "F", "G", "H", "I", "J", "K", "L", "Ł", "M", "N", "Ń", "O", "Ó", "P", "Q",
@@ -33,6 +33,7 @@ def construct_confusion_matrix():
             data[i][j] = similarity_score
             data[j][i] = similarity_score
 
+    data = min_max_scale_list_of_lists(data)
     df = pd.DataFrame(data, columns=characters, index=characters)
     print(df)
 

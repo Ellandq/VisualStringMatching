@@ -5,9 +5,9 @@ from datetime import datetime
 from confusionMatrixConstructor import construct_confusion_matrix
 
 construct_confusion_matrix()
-#
-# expected_text = "C"
-# ocr_text = "Ć"
+
+# expected_text = "A"
+# ocr_text = "Ą"
 #
 # print(f"Comparing text \nA: {ocr_text}\nB: {expected_text}")
 # # IMAGE SAVE
