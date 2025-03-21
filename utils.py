@@ -4,48 +4,58 @@ import numpy as np
 import os
 from datetime import datetime
 
+FONT_PATH = os.path.join(os.path.dirname(__file__), "fonts", "calibri-regular.ttf")
 
-def text_to_images(*texts, font_size=32, padding=10):
+
+def text_to_images(*texts, font_size=64, padding=10, squish=False, overlap_factor=0.3):
     """
-    Converts multiple text strings into images of the same size.
+    Converts multiple text strings into images of the same size, with optional squishing (overlapping effect).
     :param texts: Variable-length list of text strings
     :param font_size: Font size for rendering
     :param padding: Padding around text
+    :param squish: If True, reduces spacing between letters (overlapping effect)
+    :param overlap_factor: Controls how much letters overlap (0.0 = no overlap, 0.5 = half overlap)
     :return: List of images (NumPy arrays)
     """
-    font = ImageFont.load_default()
+    try:
+        font = ImageFont.truetype(FONT_PATH, font_size)
+    except IOError:
+        raise ValueError(f"Font file not found: {FONT_PATH}")
 
-    # Determine max width & height needed
-    max_width = 0
-    max_height = 0
+    # Get font metrics to determine the max ascender and descender
+    ascent, descent = font.getmetrics()
+    max_char_height = ascent + descent
 
-    for text in texts:
-        dummy_img = Image.new("RGB", (1, 1))
-        draw = ImageDraw.Draw(dummy_img)
-        text_bbox = draw.textbbox((0, 0), text, font=font)
-
-        text_width = text_bbox[2] - text_bbox[0]
-        text_height = text_bbox[3] - text_bbox[1]
-
-        max_width = max(max_width, text_width)
-        max_height = max(max_height, text_height)
-
-    # Add padding
+    img_height = int(max_char_height + 2 * padding)
+    max_width = max(font.getbbox(text)[2] - font.getbbox(text)[0] for text in texts)
     img_width = int(max_width + 2 * padding)
-    img_height = int(max_height + 2 * padding)
 
     images = []
     for text in texts:
-        # Create image with consistent size
         image = Image.new("RGB", (img_width, img_height), "white")
         draw = ImageDraw.Draw(image)
 
-        # Center the text within the image
-        text_x = padding
-        text_y = padding
-        draw.text((text_x, text_y), text, fill="black", font=font)
+        if squish:
+            # Overlapping effect
+            x_offset = padding
+            for char in text:
+                char_width = font.getbbox(char)[2] - font.getbbox(char)[0]
+                char_ascent, char_descent = font.getmetrics()
 
-        # Convert to OpenCV format (NumPy array)
+                # Aligning all characters to a consistent baseline
+                text_y = padding + (ascent - char_ascent)
+
+                draw.text((x_offset, text_y), char, fill="black", font=font)
+                x_offset += char_width - (char_width * overlap_factor)
+        else:
+            # Center entire text block
+            text_width = sum(font.getbbox(char)[2] - font.getbbox(char)[0] for char in text)
+            text_x = (img_width - text_width) // 2
+            text_y = padding
+
+            draw.text((text_x, text_y), text, fill="black", font=font)
+
+        # Convert to OpenCV format
         image_cv = np.array(image, dtype=np.uint8)
         image_cv = cv2.cvtColor(image_cv, cv2.COLOR_RGB2BGR)
 
@@ -54,11 +64,13 @@ def text_to_images(*texts, font_size=32, padding=10):
     return images
 
 
-def save_images(expected_text, ocr_text):
+
+def save_images(expected_text, ocr_text, squish=False):
     """
     Saves the expected and OCR text images to a new timestamped folder.
     :param expected_text: Correct text string
     :param ocr_text: OCR-extracted text string
+    :param squish: If True, reduces spacing between letters
     """
     # Creating output folder
     base_dir = "output"
@@ -70,7 +82,7 @@ def save_images(expected_text, ocr_text):
     os.makedirs(run_folder, exist_ok=True)
 
     # Generate images with the same size
-    expected_img, ocr_img = text_to_images(expected_text, ocr_text)
+    expected_img, ocr_img = text_to_images(expected_text, ocr_text, squish=squish)
 
     # Save images
     expected_path = os.path.join(run_folder, "expected.png")
@@ -80,4 +92,3 @@ def save_images(expected_text, ocr_text):
     cv2.imwrite(ocr_path, ocr_img)
 
     print(f"Images saved in: {run_folder}")
-

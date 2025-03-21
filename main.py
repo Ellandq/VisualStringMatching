@@ -5,13 +5,13 @@ from datetime import datetime
 from confusionMatrixConstructor import construct_confusion_matrix
 
 construct_confusion_matrix()
-
-# expected_text = "A"
-# ocr_text = "A"
+#
+# expected_text = "C"
+# ocr_text = "Ć"
 #
 # print(f"Comparing text \nA: {ocr_text}\nB: {expected_text}")
 # # IMAGE SAVE
-# # utils.save_images(expected_text, ocr_text)
+# utils.save_images(expected_text, ocr_text, squish=True)
 #
 # # TEXT CONVERSION
 # images = utils.text_to_images(expected_text, ocr_text)
