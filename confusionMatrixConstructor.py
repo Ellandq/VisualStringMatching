@@ -1,9 +1,4 @@
-import random
 import pandas as pd
-import numpy as np
-from openpyxl import load_workbook
-from openpyxl.utils import get_column_letter
-from openpyxl.worksheet.table import Table, TableStyleInfo
 from imageSimilarity import image_similarity
 from utils import text_to_images, min_max_scale_list_of_lists
 

@@ -1,7 +1,5 @@
-import cv2
 import utils
 from imageSimilarity import image_similarity
-from datetime import datetime
 from confusionMatrixConstructor import construct_confusion_matrix
 
 construct_confusion_matrix()

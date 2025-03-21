@@ -37,12 +37,24 @@ def image_similarity(img1, img2) -> float:
     edges2 = cv2.Canny(gray2, 100, 200)
     edge_diff = abs(np.mean(np.abs(edges1 - edges2)) / 255.0 - 1)
 
-    # Combine scores (weighted)
+    # Pixel Similarity
+    exact_matches = np.sum(gray1 == gray2)
+    total_pixels = gray1.size
+    pixel_similarity = exact_matches / total_pixels
+
     if isLogging:
         print(f"SSIM: {ssim_score}")
         print(f"MSE: {mse_score}")
         print(f"HIST: {hist_score}")
         print(f"EDGE: {edge_diff}")
-    final_score = (0.4 * ssim_score) + (0.2 * mse_score) + (0.3 * hist_score) + (0.1 * edge_diff)
+        print(f"PIXEL SIMILARITY: {pixel_similarity}")
+
+    final_score = (
+        (0.35 * ssim_score) +
+        (0.1 * mse_score) +
+        (0.25 * hist_score) +
+        (0.1 * edge_diff) +
+        (0.2 * pixel_similarity)
+    )
 
     return round(final_score, 4)
